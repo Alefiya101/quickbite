@@ -11,6 +11,16 @@ repository="$(gh repo view --json nameWithOwner --jq '.nameWithOwner' | tr '[:up
 image="ghcr.io/${repository}:${sha}"
 
 docker pull "$image"
-kind load docker-image "$image" --name quickbite
-kubectl set image deployment/quickbite "quickbite=${image}"
+local_image="quickbite:${sha}"
+image_container="$(docker create "$image")"
+trap 'docker rm -f "$image_container" >/dev/null 2>&1 || true' EXIT
+docker export "$image_container" | docker import \
+    --change 'WORKDIR /app' \
+    --change 'CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]' \
+    - "$local_image"
+docker rm "$image_container" >/dev/null
+trap - EXIT
+
+kind load docker-image "$local_image" --name quickbite
+kubectl set image deployment/quickbite "quickbite=${local_image}"
 kubectl rollout status deployment/quickbite --timeout=120s
