@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect, url_for
 
 app = Flask(__name__)
 
@@ -11,6 +11,11 @@ MENU = [
     {"id": 4, "name": "Tomato Soup", "price": 6.25},
     {"id": 5, "name": "Grilled Cheese", "price": 7.0},
 ]
+
+
+@app.get("/")
+def index():
+    return redirect(url_for("get_menu"))
 
 
 @app.get("/menu")

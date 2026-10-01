@@ -1,6 +1,13 @@
 from app import app
 
 
+def test_root_redirects_to_menu():
+    response = app.test_client().get("/")
+
+    assert response.status_code == 302
+    assert response.location == "/menu"
+
+
 def test_menu_has_five_items():
     response = app.test_client().get("/menu")
 
