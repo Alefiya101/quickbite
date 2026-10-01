@@ -11,5 +11,6 @@ repository="$(gh repo view --json nameWithOwner --jq '.nameWithOwner' | tr '[:up
 image="ghcr.io/${repository}:${sha}"
 
 docker pull "$image"
+kind load docker-image "$image" --name quickbite
 kubectl set image deployment/quickbite "quickbite=${image}"
 kubectl rollout status deployment/quickbite --timeout=120s
